@@ -29,7 +29,9 @@ def flip_monster_api(_: gr.Blocks, app: FastAPI):
         model: str = Body("buffalo_l", title='face Recognition model'), 
     ):
         print('start')
+        result_image_code = input_image
         image = api.decode_base64_to_image(input_image)
+        image = image.convert('RGB')
 
         data_transform = transforms.Compose([transforms.Resize([224, 224]),
                                             transforms.ToTensor(),
@@ -48,9 +50,12 @@ def flip_monster_api(_: gr.Blocks, app: FastAPI):
             predict_cla = torch.argmax(predict).numpy()
         print(predict_cla)
         if str(predict_cla) == "0":
-            image = image.transpose(Image.FLIP_LEFT_RIGHT)
-
-        return {"images": [api.encode_pil_to_base64(image).decode("utf-8")]}
+            # image = image.transpose(Image.FLIP_LEFT_RIGHT)
+            flip_image = api.decode_base64_to_image(input_image)
+            flip_image = flip_image.transpose(Image.FLIP_LEFT_RIGHT)
+            result_image_code = api.encode_pil_to_base64(flip_image).decode("utf-8")
+            
+        return {"images": [result_image_code]}
 
 try:
     import modules.script_callbacks as script_callbacks
